@@ -3,20 +3,18 @@ import uselect
 import usocket
 import uasyncio
 
-MAX_PACKET_SIZE = const(1024)
 
 # UDP server
 class UDPServer:
-    def __init__(self, timeout=1):
-        self.timeout = timeout
+    def __init__(self, polltimeout=1, max_packet=1024):
+        self.polltimeout = polltimeout
+        self.max_packet = max_packet
     
     def close(self):
         self.sock.close()
-        self.task.cancel()
 
     async def serve(self, cb, host, port, backlog=5):
-        print('Init')
-        ai = usocket.getaddrinfo(host, port)[0]  # Todo: blocking!
+        ai = usocket.getaddrinfo(host, port)[0]  # blocking!
         s = usocket.socket(usocket.AF_INET, usocket.SOCK_DGRAM)
         self.sock = s
         s.setblocking(False)
@@ -24,12 +22,20 @@ class UDPServer:
 
         p = uselect.poll()
         p.register(s,uselect.POLLIN)
-        to = self.timeout
+        to = self.polltimeout
         while True:
-            if p.poll(to):
-                buf, addr = s.recvfrom(MAX_PACKET_SIZE)
-                cb(buf,addr)
-            await uasyncio.sleep(0)
-            
+            try:
+                if p.poll(to):
+                    buf, addr = s.recvfrom(MAX_PACKET_SIZE)
+                    ret = cb(buf,addr)
+                    await uasyncio.sleep(0)
+                    if ret:
+                        s.sendto(ret, addr) # blocking
+                await uasyncio.sleep(0)
+            except core.CancelledError:
+                # Shutdown server
+                s.close()
+                return
+
             
 
