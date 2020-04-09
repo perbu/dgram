@@ -1,6 +1,6 @@
 # Simple UDP listening service for uasyncio
 
-Super simple UDP-listener for the new (April 2020) uasyncio library. It invokes a callback. The return value of the callback (if any) is sent as a response to the client.
+Super simple UDP-listener for the new (April 2020) uasyncio library. It invokes a callback. The return value of the callback (if any) is sent as a response to the client. If None is turned nothing is sent to the client.
 
 Sending is sync.
 
