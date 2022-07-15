@@ -13,13 +13,14 @@ from dgram import UDPServer
 import uasyncio
 (..)
 
+port=12345
+
 def cb(msg, adr):
     print('Got:', msg)
     return 'ack'.encode('ascii')
 
 def main():
-    s = dgram.UDPServer()
+    s = UDPServer()
     l = uasyncio.get_event_loop()
-    l.run_until_complete(s.serve(cb, '127.0.0.1', port))
-```
+    l.run_until_complete(s.serve(cb, '0.0.0.0', port))```
 
