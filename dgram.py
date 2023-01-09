@@ -1,4 +1,3 @@
-
 import uselect
 import usocket
 import uasyncio
@@ -9,7 +8,7 @@ class UDPServer:
     def __init__(self, polltimeout=1, max_packet=1024):
         self.polltimeout = polltimeout
         self.max_packet = max_packet
-    
+
     def close(self):
         self.sock.close()
 
@@ -21,21 +20,18 @@ class UDPServer:
         s.bind(ai[-1])
 
         p = uselect.poll()
-        p.register(s,uselect.POLLIN)
+        p.register(s, uselect.POLLIN)
         to = self.polltimeout
         while True:
             try:
                 if p.poll(to):
-                    buf, addr = s.recvfrom(MAX_PACKET_SIZE)
-                    ret = cb(buf,addr)
+                    buf, addr = s.recvfrom(self.max_packet)
+                    ret = cb(buf, addr)
                     await uasyncio.sleep(0)
                     if ret:
-                        s.sendto(ret, addr) # blocking
+                        s.sendto(ret, addr)  # blocking
                 await uasyncio.sleep(0)
             except uasyncio.core.CancelledError:
                 # Shutdown server
                 s.close()
                 return
-
-            
-
